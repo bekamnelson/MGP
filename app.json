@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "mgp",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
@@ -47,7 +47,8 @@
       [
         "react-native-google-mobile-ads",
         {
-          "androidAppId": "ca-app-pub-5542646175321041~1573268205"
+          "androidAppId": "ca-app-pub-5542646175321041~1573268205",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511"
         }
       ]
     ],

@@ -7,37 +7,33 @@ import {
   BackHandler,
   FlatList,
   KeyboardAvoidingView, Platform,
-  SafeAreaView,
   StyleSheet, Text,
   TextInput,
   ToastAndroid,
   TouchableOpacity,
   View
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // 1. Importation de AdMob
-import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
+import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 
-import { GradeContext } from '../../context/GradeContext';
-import { calculerResultats } from '../../utils/calculator';
+import { GradeContext, Systeme } from '../../context/GradeContext';
+import { AD_UNIT_IDS, etatPubs, usePubsAutorisees } from '../../utils/ads';
+import { calculerResultats, trouverIntervalle, versSur20 } from '../../utils/calculator';
 
-// 2. Configuration de l'ID (Utilisez TestIds en développement)
-export const ENABLE_REAL_ADS = false;
-
-// Identifiant réel de votre bloc d'annonces
-const PRODUCTION_BANNER_ID = 'ca-app-pub-5542646175321041/6113122329';
-
-// Sélection automatique de l'ID d'annonce
-export const adUnitIdFooter = ENABLE_REAL_ADS
-  ? PRODUCTION_BANNER_ID
-  : TestIds.BANNER;
+// Note avec au plus 2 décimales (saisie en cours comprise, ex: "12.")
+const FORMAT_NOTE = /^\d{0,3}(\.\d{0,2})?$/;
+const SYSTEMES: Systeme[] = [20, 100];
+// Crédit : nombre positif avec au plus 1 décimale
+const FORMAT_CREDIT = /^\d{1,2}(\.\d)?$/;
 
 export default function HomeScreen() {
   const router = useRouter();
   const pathname = usePathname();
-  const { matieres, intervalles, sauvegarderMatieres } = useContext(GradeContext);
+  const { matieres, intervalles, notes, systeme, sauvegarderMatieres, sauvegarderNotes, changerSysteme } = useContext(GradeContext);
+  const pubsAutorisees = usePubsAutorisees();
 
-  const [notes, setNotes] = useState<{ [key: string]: string }>({});
   const [nom, setNom] = useState('');
   const [credit, setCredit] = useState('');
   const [backPressedCount, setBackPressedCount] = useState(0);
@@ -75,40 +71,45 @@ export default function HomeScreen() {
 
     const backHandler = BackHandler.addEventListener('hardwareBackPress', onBackPress);
     return () => backHandler.remove();
-  }, [pathname, backPressedCount]);
+  }, [pathname, backPressedCount, router]);
 
   // Validation et mise à jour de la note
   const handleNoteChange = (id: string, text: string) => {
-    const formattedText = text.replace(',', '.');
+    const formattedText = text.replace(/,/g, '.');
 
     if (formattedText === '') {
       const updatedNotes = { ...notes };
       delete updatedNotes[id];
-      setNotes(updatedNotes);
+      sauvegarderNotes(updatedNotes);
       return;
     }
+
+    // Caractères non numériques ou plus de 2 décimales : on ignore la frappe
+    if (!FORMAT_NOTE.test(formattedText)) return;
 
     const val = parseFloat(formattedText);
 
-    if (isNaN(val)) return;
-
-    if (val < 0 || val > 20) {
-      Alert.alert("Note invalide", "La note doit être comprise entre 0 et 20.");
+    if (!isNaN(val) && val > systeme) {
+      Alert.alert("Note invalide", `La note doit être comprise entre 0 et ${systeme}.`);
       return;
     }
 
-    setNotes({ ...notes, [id]: formattedText });
+    sauvegarderNotes({ ...notes, [id]: formattedText });
   };
 
   const ajouterMatiere = () => {
-    if (!nom || !credit || isNaN(parseFloat(credit))) {
-      Alert.alert("Erreur", "Veuillez saisir un nom et un crédit valide.");
+    const nomPropre = nom.trim();
+    const creditTexte = credit.trim().replace(',', '.');
+    const creditVal = parseFloat(creditTexte);
+
+    if (!nomPropre || !FORMAT_CREDIT.test(creditTexte) || creditVal <= 0) {
+      Alert.alert("Erreur", "Veuillez saisir un nom et un crédit valide (nombre supérieur à 0).");
       return;
     }
     const nouvelleMatiere = {
       id: Date.now().toString(),
-      nom: nom,
-      cr: parseFloat(credit)
+      nom: nomPropre,
+      cr: creditVal
     };
     sauvegarderMatieres([...matieres, nouvelleMatiere]);
     setNom('');
@@ -133,10 +134,16 @@ export default function HomeScreen() {
     );
   };
 
-  const resultats = calculerResultats(matieres, notes, intervalles);
+  const resultats = calculerResultats(matieres, notes, intervalles, systeme);
+
+  // Grade de la tranche où tombe la note d'une UE (vide si pas de note)
+  const gradeDeLaNote = (id: string) => {
+    const note = parseFloat(notes[id]);
+    return isNaN(note) ? undefined : trouverIntervalle(versSur20(note, systeme), intervalles)?.grade;
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
       <StatusBar hidden={true} />
 
       <KeyboardAvoidingView
@@ -156,17 +163,37 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Choix du système de notation */}
+        <View style={styles.systemeZone}>
+          <Text style={styles.systemeLabel}>Notes sur</Text>
+          <View style={styles.systemeChoix}>
+            {SYSTEMES.map((s) => (
+              <TouchableOpacity
+                key={s}
+                style={[styles.systemeBtn, systeme === s && styles.systemeBtnActif]}
+                onPress={() => changerSysteme(s)}
+              >
+                <Text style={[styles.systemeBtnText, systeme === s && styles.systemeBtnTextActif]}>
+                  /{s}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
         <View style={styles.addZone}>
           <TextInput
             style={[styles.input, { flex: 2 }]}
             placeholder="Nom de l'UE"
+            placeholderTextColor="#94a3b8"
             value={nom}
             onChangeText={setNom}
           />
           <TextInput
             style={[styles.input, { flex: 1 }]}
             placeholder="Crédit"
-            keyboardType="numeric"
+            placeholderTextColor="#94a3b8"
+            keyboardType="decimal-pad"
             value={credit}
             onChangeText={setCredit}
           />
@@ -191,11 +218,17 @@ export default function HomeScreen() {
                 <Text style={styles.courseName}>{item.nom}</Text>
                 <Text style={styles.courseDetails}>Crédits: {item.cr}</Text>
               </View>
+              {gradeDeLaNote(item.id) && (
+                <View style={styles.gradeBadge}>
+                  <Text style={styles.gradeBadgeText}>{gradeDeLaNote(item.id)}</Text>
+                </View>
+              )}
               <TextInput
                 style={styles.noteInput}
                 placeholder="Note"
+                placeholderTextColor="#94a3b8"
                 keyboardType="decimal-pad"
-                maxLength={5}
+                maxLength={6}
                 value={notes[item.id] || ''}
                 onChangeText={(text) => handleNoteChange(item.id, text)}
               />
@@ -205,22 +238,32 @@ export default function HomeScreen() {
       </KeyboardAvoidingView>
 
       {/* SÉCURITÉ : BANNIÈRE UNIQUE EN BAS (Ne se recharge pas au scroll) */}
-      <View style={styles.footerAdContainer}>
-        <BannerAd
-          unitId={adUnitIdFooter}
-          size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-          requestOptions={{ requestNonPersonalizedAdsOnly: true }}
-        />
-      </View>
+      {pubsAutorisees && (
+        <View style={styles.footerAdContainer}>
+          <BannerAd
+            unitId={AD_UNIT_IDS.banniereAccueil}
+            size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+            requestOptions={{ requestNonPersonalizedAdsOnly: true }}
+            onAdOpened={() => { etatPubs.ignorerProchainRetour = true; }}
+          />
+        </View>
+      )}
 
       <View style={styles.footer}>
         <View style={styles.resItem}>
-          <Text style={styles.label}>Moyenne /20</Text>
+          <Text style={styles.label}>Moyenne /{systeme}</Text>
           <Text style={[styles.val, styles.valMoy]}>{resultats.moyenne}</Text>
         </View>
         <View style={[styles.resItem, styles.borderLeft]}>
           <Text style={styles.label}>MGP (4.0)</Text>
           <Text style={styles.val}>{resultats.mgp}</Text>
+        </View>
+        <View style={[styles.resItem, styles.borderLeft]}>
+          <Text style={styles.label}>Grade</Text>
+          <Text style={[styles.val, styles.valGrade]}>{resultats.grade}</Text>
+          {resultats.appreciation !== '' && (
+            <Text style={styles.appreciation}>{resultats.appreciation}</Text>
+          )}
         </View>
       </View>
     </SafeAreaView>
@@ -233,24 +276,35 @@ const styles = StyleSheet.create({
   title: { fontSize: 20, fontWeight: 'bold', color: '#0f172a' },
   subtitle: { fontSize: 12, color: '#64748b' },
   btnSettings: { backgroundColor: '#e2e8f0', padding: 8, borderRadius: 8 },
-  btnSettingsText: { fontSize: 12, fontWeight: '600' },
+  btnSettingsText: { fontSize: 12, fontWeight: '600', color: '#0f172a' },
+  systemeZone: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 15 },
+  systemeLabel: { fontSize: 13, fontWeight: '600', color: '#334155' },
+  systemeChoix: { flexDirection: 'row', backgroundColor: '#e2e8f0', borderRadius: 8, padding: 3 },
+  systemeBtn: { paddingVertical: 6, paddingHorizontal: 16, borderRadius: 6 },
+  systemeBtnActif: { backgroundColor: '#3b82f6' },
+  systemeBtnText: { fontSize: 13, fontWeight: 'bold', color: '#475569' },
+  systemeBtnTextActif: { color: '#fff' },
   addZone: { flexDirection: 'row', padding: 12, backgroundColor: '#e2e8f0', margin: 10, borderRadius: 12, gap: 8 },
-  input: { backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 10, height: 40 },
+  input: { backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 10, height: 40, color: '#0f172a' },
   btnAdd: { backgroundColor: '#3b82f6', justifyContent: 'center', paddingHorizontal: 12, borderRadius: 8 },
   btnAddText: { color: '#fff', fontWeight: 'bold', fontSize: 12 },
   card: { backgroundColor: '#fff', marginHorizontal: 10, marginBottom: 8, padding: 12, borderRadius: 10, flexDirection: 'row', alignItems: 'center', borderLeftWidth: 5, borderLeftColor: '#3b82f6' },
   btnRemove: { backgroundColor: '#ef4444', width: 22, height: 22, borderRadius: 11, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
   btnRemoveText: { color: '#fff', fontSize: 10, fontWeight: 'bold' },
   info: { flex: 1 },
-  courseName: { fontWeight: 'bold', fontSize: 14 },
+  courseName: { fontWeight: 'bold', fontSize: 14, color: '#0f172a' },
   courseDetails: { fontSize: 12, color: '#94a3b8' },
-  noteInput: { width: 60, height: 40, borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 6, textAlign: 'center' },
+  noteInput: { width: 60, height: 40, borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 6, textAlign: 'center', color: '#0f172a' },
   footer: { backgroundColor: '#0f172a', padding: 15, flexDirection: 'row', justifyContent: 'space-around', borderTopLeftRadius: 20, borderTopRightRadius: 20 },
   resItem: { alignItems: 'center' },
   borderLeft: { borderLeftWidth: 1, borderLeftColor: '#334155', paddingLeft: 20 },
   label: { color: '#94a3b8', fontSize: 10 },
   val: { color: '#fff', fontSize: 22, fontWeight: 'bold' },
   valMoy: { color: '#60a5fa' },
+  valGrade: { color: '#fbbf24' },
+  appreciation: { color: '#94a3b8', fontSize: 10 },
+  gradeBadge: { backgroundColor: '#dbeafe', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4, marginRight: 8, minWidth: 34, alignItems: 'center' },
+  gradeBadgeText: { color: '#1d4ed8', fontWeight: 'bold', fontSize: 13 },
   footerAdContainer: {
     alignItems: 'center',
     justifyContent: 'center',

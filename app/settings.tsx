@@ -2,29 +2,25 @@ import { Stack } from 'expo-router';
 import React, { useContext, useState } from 'react';
 import {
     Alert,
-    FlatList, SafeAreaView,
+    FlatList,
     StyleSheet, Text,
     TextInput, TouchableOpacity,
     View
 } from 'react-native';
-import { GradeContext } from '../context/GradeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { GradeContext, INTERVALLES_DEFAULT } from '../context/GradeContext';
 
 // 1. IMPORTATION ADMOB
-import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
-
-
-import { ENABLE_REAL_ADS } from "./(tabs)/index";
-
-const REAL_BANNER_SETTINGS = 'ca-app-pub-5542646175321041/6963169563';
-
-
-export const adUnitIdSettings = ENABLE_REAL_ADS ? REAL_BANNER_SETTINGS : TestIds.BANNER;
+import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
+import { AD_UNIT_IDS, etatPubs, usePubsAutorisees } from '../utils/ads';
 
 export default function SettingsScreen() {
     const { intervalles, sauvegarderIntervalles } = useContext(GradeContext);
     const [min, setMin] = useState('');
     const [max, setMax] = useState('');
     const [gpa, setGpa] = useState('');
+    const [grade, setGrade] = useState('');
+    const pubsAutorisees = usePubsAutorisees();
 
     const ajouterIntervalle = () => {
         const minVal = parseFloat(min.replace(',', '.'));
@@ -46,8 +42,10 @@ export default function SettingsScreen() {
             return;
         }
 
+        // Deux tranches se chevauchent dès qu'elles ont une note en commun
+        // (y compris quand la nouvelle englobe entièrement une tranche existante)
         const chevauchement = intervalles.some(
-            (i) => (minVal >= i.min && minVal < i.max) || (maxVal > i.min && maxVal <= i.max)
+            (i) => minVal <= i.max && maxVal >= i.min
         );
 
         if (chevauchement) {
@@ -60,6 +58,7 @@ export default function SettingsScreen() {
             min: minVal,
             max: maxVal,
             gpa: gpaVal,
+            grade: grade.trim().toUpperCase() || undefined,
         };
 
         const misAJour = [...intervalles, nouveau].sort((a, b) => b.min - a.min);
@@ -68,11 +67,25 @@ export default function SettingsScreen() {
         setMin('');
         setMax('');
         setGpa('');
+        setGrade('');
     };
 
-    const supprimerIntervalle = (id: string) => {
-        const misAJour = intervalles.filter((i) => i.id !== id);
-        sauvegarderIntervalles(misAJour);
+    const supprimerIntervalle = (intervalle: { id: string; min: number; max: number }) => {
+        Alert.alert(
+            'Confirmation',
+            `Voulez-vous supprimer la tranche ${intervalle.min} à ${intervalle.max} ?`,
+            [
+                { text: 'Annuler', style: 'cancel' },
+                {
+                    text: 'Supprimer',
+                    style: 'destructive',
+                    onPress: () => {
+                        const misAJour = intervalles.filter((i) => i.id !== intervalle.id);
+                        sauvegarderIntervalles(misAJour);
+                    },
+                },
+            ]
+        );
     };
 
     const reinitialiserBaremeParDefaut = () => {
@@ -85,20 +98,7 @@ export default function SettingsScreen() {
                     text: 'Restaurer',
                     style: 'destructive',
                     onPress: () => {
-                        const parDefaut = [
-                            { id: '1', min: 16, max: 20, gpa: 4.0 },
-                            { id: '2', min: 15, max: 15.99, gpa: 3.7 },
-                            { id: '3', min: 14, max: 14.99, gpa: 3.3 },
-                            { id: '4', min: 13, max: 13.99, gpa: 3.0 },
-                            { id: '5', min: 12, max: 12.99, gpa: 2.7 },
-                            { id: '6', min: 11, max: 11.99, gpa: 2.3 },
-                            { id: '7', min: 10, max: 10.99, gpa: 2.0 },
-                            { id: '8', min: 9, max: 9.99, gpa: 1.7 },
-                            { id: '9', min: 8, max: 8.99, gpa: 1.3 },
-                            { id: '10', min: 7, max: 7.99, gpa: 1.0 },
-                            { id: '11', min: 0, max: 6.99, gpa: 0.0 },
-                        ];
-                        sauvegarderIntervalles(parDefaut);
+                        sauvegarderIntervalles(INTERVALLES_DEFAULT);
                     },
                 },
             ]
@@ -106,7 +106,7 @@ export default function SettingsScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
             <Stack.Screen options={{ title: 'Configuration du Barème' }} />
 
             {/* 3. ENVELOPPE DU CONTENU POUR SÉPARER DE LA PUB */}
@@ -114,7 +114,7 @@ export default function SettingsScreen() {
                 <View style={styles.headerRow}>
                     <View style={{ flex: 1 }}>
                         <Text style={styles.title}>Barème MGP</Text>
-                        <Text style={styles.subtitle}>Définissez la MGP pour chaque tranche de note.</Text>
+                        <Text style={styles.subtitle}>Définissez la MGP pour chaque tranche de note (notes sur 20).</Text>
                     </View>
                     <TouchableOpacity style={styles.btnReset} onPress={reinitialiserBaremeParDefaut}>
                         <Text style={styles.btnResetText}>🔄 Reset</Text>
@@ -158,6 +158,19 @@ export default function SettingsScreen() {
                                 onChangeText={setGpa}
                             />
                         </View>
+
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.fieldLabel}>Grade</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="ex: B+"
+                                placeholderTextColor="#94a3b8"
+                                autoCapitalize="characters"
+                                maxLength={3}
+                                value={grade}
+                                onChangeText={setGrade}
+                            />
+                        </View>
                     </View>
 
                     <TouchableOpacity style={styles.btnAdd} onPress={ajouterIntervalle}>
@@ -172,9 +185,10 @@ export default function SettingsScreen() {
                     contentContainerStyle={{ paddingBottom: 10 }}
                     renderItem={({ item }) => (
                         <View style={styles.row}>
+                            <Text style={styles.gradeText}>{item.grade ?? '-'}</Text>
                             <Text style={styles.rowText}>Note de {item.min} à {item.max}</Text>
                             <Text style={styles.gpaText}>{item.gpa.toFixed(1)} MGP</Text>
-                            <TouchableOpacity onPress={() => supprimerIntervalle(item.id)}>
+                            <TouchableOpacity onPress={() => supprimerIntervalle(item)}>
                                 <Text style={styles.deleteText}>✕</Text>
                             </TouchableOpacity>
                         </View>
@@ -183,13 +197,16 @@ export default function SettingsScreen() {
             </View>
 
             {/* 4. CONTENEUR DE LA PUBLICITÉ SÉCURISÉ EN BAS */}
-            <View style={styles.adContainer}>
-                <BannerAd
-                    unitId={adUnitIdSettings}
-                    size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-                    requestOptions={{ requestNonPersonalizedAdsOnly: true }}
-                />
-            </View>
+            {pubsAutorisees && (
+                <View style={styles.adContainer}>
+                    <BannerAd
+                        unitId={AD_UNIT_IDS.banniereBareme}
+                        size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+                        requestOptions={{ requestNonPersonalizedAdsOnly: true }}
+                        onAdOpened={() => { etatPubs.ignorerProchainRetour = true; }}
+                    />
+                </View>
+            )}
         </SafeAreaView>
     );
 }
@@ -225,7 +242,8 @@ const styles = StyleSheet.create({
     btnAddText: { color: '#fff', fontSize: 13, fontWeight: 'bold' },
 
     row: { backgroundColor: '#fff', padding: 14, borderRadius: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-    rowText: { fontSize: 14, color: '#334155' },
+    rowText: { flex: 1, fontSize: 14, color: '#334155' },
+    gradeText: { width: 36, fontWeight: 'bold', color: '#0f172a', fontSize: 15 },
     gpaText: { fontWeight: 'bold', color: '#3b82f6', fontSize: 15 },
     deleteText: { color: '#ef4444', fontWeight: 'bold', fontSize: 16, paddingHorizontal: 8 },
 
