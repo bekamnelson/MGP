@@ -40,8 +40,8 @@ export default function HomeScreen() {
 
   // Configuration Immersive
   useEffect(() => {
+    // setBehaviorAsync n'est pas pris en charge avec l'affichage bord à bord (Android 15+)
     NavigationBar.setVisibilityAsync("hidden");
-    NavigationBar.setBehaviorAsync("overlay-swipe");
   }, []);
 
   // Gestion du double appui retour
@@ -150,62 +150,67 @@ export default function HomeScreen() {
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.title}>Calculateur de Notes</Text>
-            <Text style={styles.subtitle}>Dévoilez votre potentiel.</Text>
-          </View>
-          <TouchableOpacity
-            style={styles.btnSettings}
-            onPress={() => router.push('/settings')}
-          >
-            <Text style={styles.btnSettingsText}>⚙️ Barème</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Choix du système de notation */}
-        <View style={styles.systemeZone}>
-          <Text style={styles.systemeLabel}>Notes sur</Text>
-          <View style={styles.systemeChoix}>
-            {SYSTEMES.map((s) => (
-              <TouchableOpacity
-                key={s}
-                style={[styles.systemeBtn, systeme === s && styles.systemeBtnActif]}
-                onPress={() => changerSysteme(s)}
-              >
-                <Text style={[styles.systemeBtnText, systeme === s && styles.systemeBtnTextActif]}>
-                  /{s}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.addZone}>
-          <TextInput
-            style={[styles.input, { flex: 2 }]}
-            placeholder="Nom de l'UE"
-            placeholderTextColor="#94a3b8"
-            value={nom}
-            onChangeText={setNom}
-          />
-          <TextInput
-            style={[styles.input, { flex: 1 }]}
-            placeholder="Crédit"
-            placeholderTextColor="#94a3b8"
-            keyboardType="decimal-pad"
-            value={credit}
-            onChangeText={setCredit}
-          />
-          <TouchableOpacity style={styles.btnAdd} onPress={ajouterMatiere}>
-            <Text style={styles.btnAddText}>AJOUTER</Text>
-          </TouchableOpacity>
-        </View>
-
         <FlatList
           data={matieres}
           keyExtractor={item => item.id}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.liste}
+          // L'en-tête défile avec la liste : l'écran reste utilisable en paysage
+          ListHeaderComponent={
+            <>
+              <View style={styles.header}>
+                <View>
+                  <Text style={styles.title}>Calculateur de Notes</Text>
+                  <Text style={styles.subtitle}>Dévoilez votre potentiel.</Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.btnSettings}
+                  onPress={() => router.push('/settings')}
+                >
+                  <Text style={styles.btnSettingsText}>⚙️ Barème</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Choix du système de notation */}
+              <View style={styles.systemeZone}>
+                <Text style={styles.systemeLabel}>Notes sur</Text>
+                <View style={styles.systemeChoix}>
+                  {SYSTEMES.map((s) => (
+                    <TouchableOpacity
+                      key={s}
+                      style={[styles.systemeBtn, systeme === s && styles.systemeBtnActif]}
+                      onPress={() => changerSysteme(s)}
+                    >
+                      <Text style={[styles.systemeBtnText, systeme === s && styles.systemeBtnTextActif]}>
+                        /{s}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.addZone}>
+                <TextInput
+                  style={[styles.input, { flex: 2 }]}
+                  placeholder="Nom de l'UE"
+                  placeholderTextColor="#94a3b8"
+                  value={nom}
+                  onChangeText={setNom}
+                />
+                <TextInput
+                  style={[styles.input, { flex: 1 }]}
+                  placeholder="Crédit"
+                  placeholderTextColor="#94a3b8"
+                  keyboardType="decimal-pad"
+                  value={credit}
+                  onChangeText={setCredit}
+                />
+                <TouchableOpacity style={styles.btnAdd} onPress={ajouterMatiere}>
+                  <Text style={styles.btnAddText}>AJOUTER</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          }
           renderItem={({ item }) => (
             <View style={styles.card}>
               <TouchableOpacity
@@ -284,6 +289,8 @@ const styles = StyleSheet.create({
   systemeBtnActif: { backgroundColor: '#3b82f6' },
   systemeBtnText: { fontSize: 13, fontWeight: 'bold', color: '#475569' },
   systemeBtnTextActif: { color: '#fff' },
+  // Sur tablette, le contenu reste centré au lieu de s'étirer sur toute la largeur
+  liste: { paddingBottom: 20, width: '100%', maxWidth: 720, alignSelf: 'center' },
   addZone: { flexDirection: 'row', padding: 12, backgroundColor: '#e2e8f0', margin: 10, borderRadius: 12, gap: 8 },
   input: { backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 10, height: 40, color: '#0f172a' },
   btnAdd: { backgroundColor: '#3b82f6', justifyContent: 'center', paddingHorizontal: 12, borderRadius: 8 },

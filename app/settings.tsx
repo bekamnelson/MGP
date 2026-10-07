@@ -111,78 +111,83 @@ export default function SettingsScreen() {
 
             {/* 3. ENVELOPPE DU CONTENU POUR SÉPARER DE LA PUB */}
             <View style={styles.contentWrapper}>
-                <View style={styles.headerRow}>
-                    <View style={{ flex: 1 }}>
-                        <Text style={styles.title}>Barème MGP</Text>
-                        <Text style={styles.subtitle}>Définissez la MGP pour chaque tranche de note (notes sur 20).</Text>
-                    </View>
-                    <TouchableOpacity style={styles.btnReset} onPress={reinitialiserBaremeParDefaut}>
-                        <Text style={styles.btnResetText}>🔄 Reset</Text>
-                    </TouchableOpacity>
-                </View>
-
-                <View style={styles.cardForm}>
-                    <View style={styles.inputsRow}>
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.fieldLabel}>Note Min</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="ex: 12"
-                                placeholderTextColor="#94a3b8"
-                                keyboardType="decimal-pad"
-                                value={min}
-                                onChangeText={setMin}
-                            />
-                        </View>
-
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.fieldLabel}>Note Max</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="ex: 13.99"
-                                placeholderTextColor="#94a3b8"
-                                keyboardType="decimal-pad"
-                                value={max}
-                                onChangeText={setMax}
-                            />
-                        </View>
-
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.fieldLabel}>MGP</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="ex: 3.0"
-                                placeholderTextColor="#94a3b8"
-                                keyboardType="decimal-pad"
-                                value={gpa}
-                                onChangeText={setGpa}
-                            />
-                        </View>
-
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.fieldLabel}>Grade</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="ex: B+"
-                                placeholderTextColor="#94a3b8"
-                                autoCapitalize="characters"
-                                maxLength={3}
-                                value={grade}
-                                onChangeText={setGrade}
-                            />
-                        </View>
-                    </View>
-
-                    <TouchableOpacity style={styles.btnAdd} onPress={ajouterIntervalle}>
-                        <Text style={styles.btnAddText}>+ Ajouter la tranche</Text>
-                    </TouchableOpacity>
-                </View>
-
                 <FlatList
                     data={intervalles}
                     keyExtractor={(item) => item.id}
                     showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{ paddingBottom: 10 }}
+                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={styles.liste}
+                    // L'en-tête défile avec la liste : l'écran reste utilisable en paysage
+                    ListHeaderComponent={
+                        <>
+                            <View style={styles.headerRow}>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.title}>Barème MGP</Text>
+                                    <Text style={styles.subtitle}>Définissez la MGP pour chaque tranche de note (notes sur 20).</Text>
+                                </View>
+                                <TouchableOpacity style={styles.btnReset} onPress={reinitialiserBaremeParDefaut}>
+                                    <Text style={styles.btnResetText}>🔄 Reset</Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            <View style={styles.cardForm}>
+                                <View style={styles.inputsRow}>
+                                    <View style={styles.inputContainer}>
+                                        <Text style={styles.fieldLabel}>Note Min</Text>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="ex: 12"
+                                            placeholderTextColor="#94a3b8"
+                                            keyboardType="decimal-pad"
+                                            value={min}
+                                            onChangeText={setMin}
+                                        />
+                                    </View>
+
+                                    <View style={styles.inputContainer}>
+                                        <Text style={styles.fieldLabel}>Note Max</Text>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="ex: 13.99"
+                                            placeholderTextColor="#94a3b8"
+                                            keyboardType="decimal-pad"
+                                            value={max}
+                                            onChangeText={setMax}
+                                        />
+                                    </View>
+
+                                    <View style={styles.inputContainer}>
+                                        <Text style={styles.fieldLabel}>MGP</Text>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="ex: 3.0"
+                                            placeholderTextColor="#94a3b8"
+                                            keyboardType="decimal-pad"
+                                            value={gpa}
+                                            onChangeText={setGpa}
+                                        />
+                                    </View>
+
+                                    <View style={styles.inputContainer}>
+                                        <Text style={styles.fieldLabel}>Grade</Text>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="ex: B+"
+                                            placeholderTextColor="#94a3b8"
+                                            autoCapitalize="characters"
+                                            maxLength={3}
+                                            value={grade}
+                                            onChangeText={setGrade}
+                                        />
+                                    </View>
+                                </View>
+
+                                <TouchableOpacity style={styles.btnAdd} onPress={ajouterIntervalle}>
+                                    <Text style={styles.btnAddText}>+ Ajouter la tranche</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </>
+                    }
                     renderItem={({ item }) => (
                         <View style={styles.row}>
                             <Text style={styles.gradeText}>{item.grade ?? '-'}</Text>
@@ -215,7 +220,9 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f1f5f9' },
 
     // J'ai déplacé le padding ici pour que la pub prenne toute la largeur en bas
-    contentWrapper: { flex: 1, padding: 15 },
+    contentWrapper: { flex: 1 },
+    // Sur tablette, le contenu reste centré au lieu de s'étirer sur toute la largeur
+    liste: { padding: 15, width: '100%', maxWidth: 720, alignSelf: 'center' },
 
     headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
     title: { fontSize: 20, fontWeight: 'bold', color: '#0f172a' },

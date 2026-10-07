@@ -1,0 +1,91 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { width: 1024px; height: 500px; overflow: hidden; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+      
+.app { width: 372px; height: 664px; background: #f1f5f9; display: flex; flex-direction: column;
+       overflow: hidden; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: #0f172a; }
+.header { padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+.title { font-size: 20px; font-weight: 700; }
+.subtitle { font-size: 12px; color: #64748b; }
+.btn-settings { background: #e2e8f0; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+.systeme { display: flex; justify-content: space-between; align-items: center; margin: 0 15px; }
+.systeme-label { font-size: 13px; font-weight: 600; color: #334155; }
+.seg { display: flex; background: #e2e8f0; border-radius: 8px; padding: 3px; }
+.seg div { padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; color: #475569; }
+.seg .on { background: #3b82f6; color: #fff; }
+.add { display: flex; gap: 8px; padding: 12px; background: #e2e8f0; margin: 10px; border-radius: 12px; }
+.input { background: #fff; border-radius: 8px; padding: 0 10px; height: 40px; display: flex;
+         align-items: center; font-size: 14px; color: #94a3b8; }
+.btn-add { background: #3b82f6; color: #fff; font-weight: 700; font-size: 12px; padding: 0 12px;
+           border-radius: 8px; display: flex; align-items: center; }
+.list { flex: 1; overflow: hidden; }
+.card { background: #fff; margin: 0 10px 8px; padding: 12px; border-radius: 10px; display: flex;
+        align-items: center; border-left: 5px solid #3b82f6; }
+.remove { background: #ef4444; width: 22px; height: 22px; border-radius: 11px; color: #fff; font-size: 10px;
+          font-weight: 700; display: flex; align-items: center; justify-content: center; margin-right: 10px; flex: none; }
+.info { flex: 1; }
+.name { font-weight: 700; font-size: 14px; }
+.details { font-size: 12px; color: #94a3b8; }
+.badge { background: #dbeafe; border-radius: 6px; padding: 4px 8px; margin-right: 8px; min-width: 18px;
+         text-align: center; color: #1d4ed8; font-weight: 700; font-size: 13px; }
+.note { width: 60px; height: 40px; border: 1px solid #e2e8f0; border-radius: 6px; display: flex;
+        align-items: center; justify-content: center; font-size: 14px; flex: none; }
+.footer { background: #0f172a; padding: 15px; display: flex; justify-content: space-around;
+          border-radius: 20px 20px 0 0; }
+.res { display: flex; flex-direction: column; align-items: center; }
+.res + .res { border-left: 1px solid #334155; padding-left: 20px; }
+.label { color: #94a3b8; font-size: 10px; }
+.val { color: #fff; font-size: 22px; font-weight: 700; }
+.appr { color: #94a3b8; font-size: 10px; }
+.navbar { background: #fff; height: 56px; display: flex; align-items: center; padding: 0 16px; gap: 24px;
+          font-size: 20px; font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,.12); position: relative; }
+.content { flex: 1; padding: 15px; overflow: hidden; }
+.head-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.reset { background: #fee2e2; color: #ef4444; font-size: 12px; font-weight: 700; padding: 8px 12px; border-radius: 8px; }
+.form { background: #fff; padding: 12px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.fields { display: flex; gap: 10px; margin-bottom: 10px; }
+.field { flex: 1; }
+.flabel { font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px; }
+.finput { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; height: 44px; display: flex;
+          align-items: center; justify-content: center; font-size: 14px; color: #94a3b8; }
+.btn-tranche { background: #3b82f6; height: 42px; border-radius: 8px; color: #fff; font-size: 13px;
+               font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.row { background: #fff; padding: 14px; border-radius: 10px; display: flex; align-items: center; margin-bottom: 8px; }
+.rgrade { width: 36px; font-weight: 700; font-size: 15px; }
+.rtext { flex: 1; font-size: 14px; color: #334155; }
+.rgpa { font-weight: 700; color: #3b82f6; font-size: 15px; }
+.rdel { color: #ef4444; font-weight: 700; font-size: 16px; padding: 0 8px; }
+
+      
+body { background: linear-gradient(120deg, #0f172a 0%, #1e3a8a 100%); color: #fff; position: relative; }
+.halo { position: absolute; width: 700px; height: 700px; border-radius: 50%; right: -120px; top: -100px;
+        background: radial-gradient(circle, rgba(59,130,246,.5), rgba(59,130,246,0) 65%); }
+.gauche { position: absolute; left: 60px; top: 0; bottom: 0; width: 560px; display: flex;
+          flex-direction: column; justify-content: center; }
+.marque { display: flex; align-items: center; gap: 22px; margin-bottom: 26px; }
+.marque img { width: 120px; height: 120px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+.marque h1 { font-size: 64px; font-weight: 800; line-height: 1; }
+.marque span { display: block; font-size: 22px; font-weight: 600; color: #93c5fd; margin-top: 6px; }
+.accroche { font-size: 34px; font-weight: 700; line-height: 1.25; }
+.accroche em { font-style: normal; color: #fbbf24; }
+.puces { display: flex; gap: 12px; margin-top: 26px; }
+.puces div { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); border-radius: 999px;
+             padding: 8px 18px; font-size: 18px; font-weight: 600; }
+.resultat { position: absolute; right: 60px; top: 125px; width: 330px; background: #0f172a; border-radius: 28px;
+            padding: 30px 24px; box-shadow: 0 30px 60px rgba(0,0,0,.5), 0 0 0 2px #334155; transform: rotate(-4deg); }
+.resultat .ligne { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 6px; }
+.resultat .ligne + .ligne { border-top: 1px solid #334155; }
+.resultat .l { color: #94a3b8; font-size: 20px; }
+.resultat .v { font-size: 44px; font-weight: 800; }
+
+    </style></head><body><div class="halo"></div>
+      <div class="gauche">
+        <div class="marque"><img src="file:///C:/realisation/MGP/store-listing/source/icone-banniere.png"><div><h1>MGP</h1><span>Calculateur de Notes</span></div></div>
+        <div class="accroche">Votre <em>moyenne</em>, votre <em>MGP</em><br>et votre <em>grade</em> en un instant</div>
+        <div class="puces"><div>Notes /20 ou /100</div><div>Barème LMD</div></div>
+      </div>
+      <div class="resultat">
+        <div class="ligne"><span class="l">Moyenne /20</span><span class="v" style="color:#60a5fa">13.92</span></div>
+        <div class="ligne"><span class="l">MGP (4.0)</span><span class="v">3.00</span></div>
+        <div class="ligne"><span class="l">Grade</span><span class="v" style="color:#fbbf24">B</span></div>
+      </div></body></html>

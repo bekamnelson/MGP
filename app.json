@@ -3,7 +3,7 @@
     "name": "MGP",
     "slug": "MGP",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "mgp",
     "userInterfaceStyle": "light",
@@ -49,6 +49,15 @@
         {
           "androidAppId": "ca-app-pub-5542646175321041~1573268205",
           "iosAppId": "ca-app-pub-3940256099942544~1458002511"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          }
         }
       ]
     ],

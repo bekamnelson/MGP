@@ -1,0 +1,107 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+      
+.app { width: 372px; height: 664px; background: #f1f5f9; display: flex; flex-direction: column;
+       overflow: hidden; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: #0f172a; }
+.header { padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+.title { font-size: 20px; font-weight: 700; }
+.subtitle { font-size: 12px; color: #64748b; }
+.btn-settings { background: #e2e8f0; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+.systeme { display: flex; justify-content: space-between; align-items: center; margin: 0 15px; }
+.systeme-label { font-size: 13px; font-weight: 600; color: #334155; }
+.seg { display: flex; background: #e2e8f0; border-radius: 8px; padding: 3px; }
+.seg div { padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; color: #475569; }
+.seg .on { background: #3b82f6; color: #fff; }
+.add { display: flex; gap: 8px; padding: 12px; background: #e2e8f0; margin: 10px; border-radius: 12px; }
+.input { background: #fff; border-radius: 8px; padding: 0 10px; height: 40px; display: flex;
+         align-items: center; font-size: 14px; color: #94a3b8; }
+.btn-add { background: #3b82f6; color: #fff; font-weight: 700; font-size: 12px; padding: 0 12px;
+           border-radius: 8px; display: flex; align-items: center; }
+.list { flex: 1; overflow: hidden; }
+.card { background: #fff; margin: 0 10px 8px; padding: 12px; border-radius: 10px; display: flex;
+        align-items: center; border-left: 5px solid #3b82f6; }
+.remove { background: #ef4444; width: 22px; height: 22px; border-radius: 11px; color: #fff; font-size: 10px;
+          font-weight: 700; display: flex; align-items: center; justify-content: center; margin-right: 10px; flex: none; }
+.info { flex: 1; }
+.name { font-weight: 700; font-size: 14px; }
+.details { font-size: 12px; color: #94a3b8; }
+.badge { background: #dbeafe; border-radius: 6px; padding: 4px 8px; margin-right: 8px; min-width: 18px;
+         text-align: center; color: #1d4ed8; font-weight: 700; font-size: 13px; }
+.note { width: 60px; height: 40px; border: 1px solid #e2e8f0; border-radius: 6px; display: flex;
+        align-items: center; justify-content: center; font-size: 14px; flex: none; }
+.footer { background: #0f172a; padding: 15px; display: flex; justify-content: space-around;
+          border-radius: 20px 20px 0 0; }
+.res { display: flex; flex-direction: column; align-items: center; }
+.res + .res { border-left: 1px solid #334155; padding-left: 20px; }
+.label { color: #94a3b8; font-size: 10px; }
+.val { color: #fff; font-size: 22px; font-weight: 700; }
+.appr { color: #94a3b8; font-size: 10px; }
+.navbar { background: #fff; height: 56px; display: flex; align-items: center; padding: 0 16px; gap: 24px;
+          font-size: 20px; font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,.12); position: relative; }
+.content { flex: 1; padding: 15px; overflow: hidden; }
+.head-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.reset { background: #fee2e2; color: #ef4444; font-size: 12px; font-weight: 700; padding: 8px 12px; border-radius: 8px; }
+.form { background: #fff; padding: 12px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.fields { display: flex; gap: 10px; margin-bottom: 10px; }
+.field { flex: 1; }
+.flabel { font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px; }
+.finput { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; height: 44px; display: flex;
+          align-items: center; justify-content: center; font-size: 14px; color: #94a3b8; }
+.btn-tranche { background: #3b82f6; height: 42px; border-radius: 8px; color: #fff; font-size: 13px;
+               font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.row { background: #fff; padding: 14px; border-radius: 10px; display: flex; align-items: center; margin-bottom: 8px; }
+.rgrade { width: 36px; font-weight: 700; font-size: 15px; }
+.rtext { flex: 1; font-size: 14px; color: #334155; }
+.rgpa { font-weight: 700; color: #3b82f6; font-size: 15px; }
+.rdel { color: #ef4444; font-weight: 700; font-size: 16px; padding: 0 8px; }
+
+      
+body { background: linear-gradient(160deg, #1e3a8a 0%, #0f172a 70%); color: #fff; position: relative; }
+.halo { position: absolute; width: 900px; height: 900px; border-radius: 50%; top: 700px; left: 90px;
+        background: radial-gradient(circle, rgba(59,130,246,.45), rgba(59,130,246,0) 65%); }
+.legende { position: absolute; top: 110px; left: 70px; right: 70px; text-align: center; }
+.legende h1 { font-size: 76px; line-height: 1.12; font-weight: 800; letter-spacing: -1px; }
+.legende h1 em { font-style: normal; color: #fbbf24; }
+.legende p { margin-top: 22px; font-size: 36px; color: #bfdbfe; }
+.phone { position: absolute; left: 154px; top: 470px; width: 772px; height: 1356px; padding: 14px;
+         border-radius: 64px; background: #020617; box-shadow: 0 40px 90px rgba(0,0,0,.55), 0 0 0 3px #334155; }
+.screen { width: 744px; height: 1328px; border-radius: 50px; overflow: hidden; }
+.screen .app { transform: scale(2); transform-origin: top left; }
+
+    </style></head><body><div class="halo"></div>
+      <div class="legende"><h1>Notes sur <em>20</em><br>ou sur <em>100</em></h1><p>Vos notes sont converties automatiquement</p></div>
+      <div class="phone"><div class="screen"><div class="app">
+      <div class="header"><div><div class="title">Calculateur de Notes</div>
+        <div class="subtitle">Dévoilez votre potentiel.</div></div>
+        <div class="btn-settings">⚙️ Barème</div></div>
+      <div class="systeme"><div class="systeme-label">Notes sur</div><div class="seg"><div class="">/20</div><div class="on">/100</div></div></div>
+      <div class="add"><div class="input" style="flex:2">Nom de l'UE</div>
+        <div class="input" style="flex:1">Crédit</div><div class="btn-add">AJOUTER</div></div>
+      <div class="list"><div class="card"><div class="remove">✕</div>
+          <div class="info"><div class="name">Formation bilingue 1</div><div class="details">Crédits: 2</div></div>
+          <div class="badge">B+</div><div class="note">72.5</div></div><div class="card"><div class="remove">✕</div>
+          <div class="info"><div class="name">EPS 1</div><div class="details">Crédits: 1</div></div>
+          <div class="badge">A</div><div class="note">80</div></div><div class="card"><div class="remove">✕</div>
+          <div class="info"><div class="name">Electromagnétisme 1</div><div class="details">Crédits: 4</div></div>
+          <div class="badge">B-</div><div class="note">63.75</div></div><div class="card"><div class="remove">✕</div>
+          <div class="info"><div class="name">TP Physique</div><div class="details">Crédits: 4</div></div>
+          <div class="badge">B+</div><div class="note">75</div></div><div class="card"><div class="remove">✕</div>
+          <div class="info"><div class="name">Mécanique du point</div><div class="details">Crédits: 4</div></div>
+          <div class="badge">C+</div><div class="note">57.5</div></div><div class="card"><div class="remove">✕</div>
+          <div class="info"><div class="name">Chimie générale</div><div class="details">Crédits: 4</div></div>
+          <div class="badge">B</div><div class="note">65</div></div><div class="card"><div class="remove">✕</div>
+          <div class="info"><div class="name">Algèbre générale</div><div class="details">Crédits: 4</div></div>
+          <div class="badge">A</div><div class="note">85</div></div><div class="card"><div class="remove">✕</div>
+          <div class="info"><div class="name">Analyse réelle 1</div><div class="details">Crédits: 4</div></div>
+          <div class="badge">C</div><div class="note">52.5</div></div><div class="card"><div class="remove">✕</div>
+          <div class="info"><div class="name">Algorithmique</div><div class="details">Crédits: 3</div></div>
+          <div class="badge">A+</div><div class="note">92.5</div></div><div class="card"><div class="remove">✕</div>
+          <div class="info"><div class="name">ECM</div><div class="details">Crédits: 1</div></div>
+          <div class="badge">B-</div><div class="note">60</div></div></div>
+      <div class="footer">
+        <div class="res"><div class="label">Moyenne /100</div><div class="val" style="color:#60a5fa">69.60</div></div>
+        <div class="res"><div class="label">MGP (4.0)</div><div class="val">3.00</div></div>
+        <div class="res"><div class="label">Grade</div><div class="val" style="color:#fbbf24">B</div>
+          <div class="appr">Assez Bien</div></div>
+      </div></div></div></div></body></html>
